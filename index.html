@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beat Aaron - Romeo & Juliet Analysis Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:linear-gradient(180deg, #1f2937 0%, #141b26 100%);
+    font-family:'Work Sans', sans-serif;
+    color:#1c2430;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:32px 16px 64px;
+  }
+  .stage{
+    width:100%;
+    max-width:760px;
+  }
+  .marquee{
+    background:#141b26;
+    border:1px solid rgba(185,148,90,.4);
+    border-radius:8px;
+    padding:18px 22px;
+    margin-bottom:20px;
+    box-shadow:0 8px 24px rgba(0,0,0,.18);
+    position:relative;
+  }
+  .marquee h1{
+    font-family:'Playfair Display', serif;
+    font-weight:700;
+    color:#faf8f4;
+    text-align:center;
+    font-size:clamp(20px,4vw,28px);
+    letter-spacing:.5px;
+    margin:0 0 14px;
+  }
+  .bulbs{
+    display:flex;
+    gap:4px;
+    height:6px;
+    border-radius:3px;
+    overflow:hidden;
+    background:rgba(255,255,255,.08);
+  }
+  .bulb{
+    flex:1;
+    background:transparent;
+    transition:background .3s;
+  }
+  .bulb.lit{
+    background:#b9945a;
+  }
+  .scoreline{
+    text-align:center;
+    color:#a8b3c2;
+    font-size:13px;
+    margin-top:12px;
+    letter-spacing:.3px;
+  }
+  .card{
+    background:#faf8f4;
+    border-radius:8px;
+    box-shadow:0 8px 24px rgba(0,0,0,.18);
+    padding:28px 26px;
+    position:relative;
+    overflow:hidden;
+    border-top:3px solid #9c7a3c;
+  }
+  .eyebrow{
+    font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+    color:#9c7a3c; margin-bottom:6px;
+  }
+  h2{
+    font-family:'Playfair Display', serif;
+    font-weight:700;
+    font-size:24px; margin:0 0 14px;
+    color:#1c2430;
+  }
+  .quote-block{
+    font-family:'Playfair Display', serif;
+    font-style:italic;
+    font-size:18px;
+    line-height:1.55;
+    background:#f1eee6;
+    border-left:4px solid #9c7a3c;
+    padding:14px 18px;
+    margin:14px 0 20px;
+    white-space:pre-line;
+  }
+  .cite{ font-style:normal; font-size:13px; color:#9c7a3c; font-weight:600; display:block; margin-top:6px;}
+  p.q{ font-weight:600; margin:18px 0 10px; font-size:16px;}
+  .options{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px;}
+  .opt{
+    text-align:left;
+    background:#fff;
+    border:2px solid #d8c9a3;
+    border-radius:8px;
+    padding:12px 14px;
+    font-size:15px;
+    cursor:pointer;
+    font-family:inherit;
+    color:#1c2430;
+    transition:border-color .15s, transform .1s;
+  }
+  .opt:hover{ border-color:#9c7a3c; transform:translateY(-1px); }
+  .opt.correct{ border-color:#2f6b4f; background:rgba(79,122,99,.15);}
+  .opt.wrong{ border-color:#a13d3d; background:rgba(138,46,46,.12);}
+  .opt:disabled{ cursor:default; }
+  textarea{
+    width:100%; min-height:90px; font-family:inherit; font-size:15px;
+    padding:12px; border-radius:8px; border:2px solid #d8c9a3; resize:vertical;
+    background:#fff; color:#1c2430;
+  }
+  textarea:focus, input:focus{ outline:2px solid #9c7a3c; border-color:#9c7a3c;}
+  input[type=text]{
+    width:100%; font-family:inherit; font-size:16px; padding:12px 14px;
+    border-radius:8px; border:2px solid #d8c9a3; background:#fff; color:#1c2430;
+  }
+  .btn{
+    display:inline-block; background:#1f2937; color:#faf8f4;
+    border:none; border-radius:8px; padding:12px 22px; font-size:15px; font-weight:600;
+    cursor:pointer; font-family:inherit; margin-top:10px;
+  }
+  .btn:hover{ background:#141b26; }
+  .btn.secondary{ background:transparent; color:#1f2937; border:2px solid #1f2937; padding:10px 20px;}
+  .btn:disabled{ opacity:.5; cursor:not-allowed; }
+  .timer{
+    font-weight:700; color:#1f2937; font-variant-numeric:tabular-nums;
+    background:rgba(109,27,44,.08); padding:4px 10px; border-radius:6px; font-size:14px;
+    float:right;
+  }
+  .checklist{ margin:14px 0; display:flex; flex-direction:column; gap:10px;}
+  .check-item{
+    display:flex; align-items:flex-start; gap:10px; background:#fff;
+    border:2px solid #d8c9a3; border-radius:8px; padding:10px 12px; cursor:pointer;
+  }
+  .check-item input{ margin-top:3px; width:18px; height:18px; }
+  .check-item .label{ font-size:14px; line-height:1.4; }
+  .check-item .label b{ display:block; font-size:14.5px; margin-bottom:2px;}
+  .model-answer{
+    background:rgba(47,74,61,.08); border-left:4px solid #2f6b4f;
+    padding:14px 18px; border-radius:6px; margin:16px 0; font-size:15px; line-height:1.6;
+  }
+  .model-answer mark{
+    padding:1px 3px; border-radius:2px; color:inherit; background:transparent;
+  }
+  .hl-1{ background:#dbe7f5; box-shadow:inset 0 -2px 0 #6f93c2; }
+  .hl-2{ background:#dcefe0; box-shadow:inset 0 -2px 0 #5a9a72; }
+  .hl-3{ background:#f5e6c8; box-shadow:inset 0 -2px 0 #c99a3f; }
+  .hl-4{ background:#f3dbe0; box-shadow:inset 0 -2px 0 #c26b85; }
+  .num{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:18px; height:18px; border-radius:50%; font-size:11px; font-weight:700;
+    color:#fff; margin-right:6px; flex:none; position:relative; top:-1px;
+  }
+  .num-1{ background:#6f93c2; }
+  .num-2{ background:#5a9a72; }
+  .num-3{ background:#c99a3f; }
+  .num-4{ background:#c26b85; }
+  .check-item .num{ margin-right:10px; margin-top:1px; }
+  .key-row{ display:flex; flex-wrap:wrap; gap:10px 16px; margin:12px 0 4px; font-size:13px; color:#5a6472;}
+  .key-row span{ display:inline-flex; align-items:center; }
+  .tally{ width:100%; border-collapse:collapse; margin:16px 0;}
+  .tally td{ padding:8px 4px; border-bottom:1px solid #d8c9a3; font-size:15px;}
+  .tally td:last-child{ text-align:right; font-weight:700;}
+  .result-banner{
+    text-align:center; font-family:'Playfair Display',serif; font-size:28px; font-weight:900;
+    padding:16px; border-radius:8px; margin-bottom:16px;
+  }
+  .result-banner.win{ background:rgba(47,74,61,.15); color:#2f6b4f;}
+  .result-banner.lose{ background:rgba(138,46,46,.12); color:#a13d3d;}
+  .error{ color:#a13d3d; font-size:13px; margin-top:6px; min-height:16px;}
+  .footer-note{ text-align:center; color:#a8b3c2; font-size:12px; margin-top:18px;}
+  .deck-list{ display:flex; flex-direction:column; gap:8px; margin:14px 0;}
+  .deck-row{ display:flex; justify-content:space-between; align-items:center; background:#fff; border:2px solid #d8c9a3; border-radius:8px; padding:10px 14px;}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="marquee">
+    <h1 id="marqueeTitle">BEAT AARON</h1>
+  </div>
+  <div class="card" id="app"></div>
+</div>
+ 
+<script>
+/* ---------------- Game data ---------------- */
+const AARON_SCORE = 8; // out of 12, edit this to change the bot's difficulty
+const CHECKLIST = [
+  {id:'surface', label:'Surface meaning', hint:'What is literally being said or done?'},
+  {id:'technique', label:'Technique + implication', hint:'What literary device is used, and what does it suggest beyond the surface?'},
+  {id:'irony', label:'Dramatic irony / context', hint:"What do we (the audience) know that the character doesn't?"},
+  {id:'effect', label:'Audience effect', hint:'How does this shape what an audience feels or understands?'}
+];
+ 
+const DEFAULT_DECK = {
+  name: "Romeo & Juliet",
+  mc: {
+    act: "Act 1, Scene 4",
+    quote: "Romeo: I dream'd a dream to-night.\nMercutio: And so did I.\nRomeo: Well, what was yours?\nMercutio: That dreamers often lie.",
+    questions: [
+      { q:"Describe what is being said on the surface?",
+        options:[
+          "Romeo is confessing his love for Juliet",
+          "Romeo and Mercutio are fighting as to if dreams can predict the future",
+          "Romeo had a dream and wants to tell Mercutio about it but he is doubtful of the truth",
+          "Mercutio is accusing Romeo of lying about attending the Capulet party"
+        ], correct:2 },
+      { q:"Identify the literary technique in \u201cThat dreamers often lie\u201d and what may it suggest beyond the surface?",
+        options:[
+          "Simile because it compares dreamers to liars - suggesting a comparison of Romeo to something else",
+          "Alliteration because it has repeated sounds - suggesting a musical rhythm",
+          "Pun because a lie means to tell an untruth and to lie down and rest - suggesting both deception and death",
+          "Hyperbole because Mercutio is exaggerating the value of dreams - suggesting his uncertainty of them"
+        ], correct:2 },
+      { q:"What do we know here that the character doesn't?",
+        options:[
+          "Tybalt is hiding around the corner, eavesdropping",
+          "Going back to the prologue, Romeo and Juliet are star crossed lovers so they are destined to die so dreams and lying is quietly ominous to us as the audience",
+          "Mercutio loves Juliet",
+          "Romeo is going to be banished from Verona so he better not dream too soon"
+        ], correct:1 },
+      { q:"How does this shape what an audience feels or understands when engaging with text?",
+        options:[
+          "It confuses the audience because we are confused as to what is actually happening",
+          "It does not have an effect as it is just a simple joke/pun",
+          "Mercutio becomes less trusted as a narrator because he hides with jokes",
+          "It creates tension because the audience senses a danger that the characters do not notice themselves"
+        ], correct:3 }
+    ]
+  },
+  short: {
+    act: "Act 2, Scene 2",
+    quote: "Juliet: Good-night, good-night! Parting is such sweet sorrow\nThat I shall say good-night till it be morrow.",
+    questions: [
+      { q:"Describe what is being said on the surface?",
+        model:"Juliet is reluctant to end the conversation with Romeo and say goodnight, even though it is very late." },
+      { q:"Identify the literary technique and what may it suggest beyond the surface?",
+        model:"Oxymoron in \u201csweet sorrow\u201d. Pleasure and pain are fused together, suggesting love and loss are inseparable in this relationship." },
+      { q:"What do we know here that the character doesn't?",
+        model:"We know their families are locked in a violent feud and the play has already told us how it ends, so this tender goodnight is shadowed by a doom Juliet can't see." },
+      { q:"How does this shape what an audience feels or understands when engaging with text?",
+        model:"It builds bittersweet anticipation. We're moved by the romance while quietly dreading what we already suspect is coming." }
+    ]
+  },
+  extended: {
+    act: "Act 3, Scene 1",
+    quote: "Tybalt: Romeo, the hate I bear thee can afford\nNo better term than this: thou art a villain.",
+    modelAnswer: "<mark class=\"hl-1\"><span class=\"num num-1\">1</span>On the surface, Tybalt walks straight up to Romeo in the street and calls him a villain to his face. In Shakespeare's time that word was a genuine, serious insult, not a throwaway one, so this is a direct challenge in front of witnesses.</mark> <mark class=\"hl-2\"><span class=\"num num-2\">2</span>The technique is verbal irony: Tybalt says \u201cthe hate I bear thee\u201d in the same polite, almost formal phrasing you'd expect for a compliment. Dressing up hatred in courteous language is Tybalt's way of goading Romeo, making the insult land harder because it sounds so controlled.</mark> <mark class=\"hl-3\"><span class=\"num num-3\">3</span>What Tybalt doesn't know is that Romeo has just secretly married Juliet, Tybalt's own cousin. That makes them family. So when Romeo stays calm and won't fight back, it isn't weakness, it's restraint out of love for someone Tybalt has no idea is now his relative.</mark> <mark class=\"hl-4\"><span class=\"num num-4\">4</span>For the audience, that gap is almost unbearable. We want to shout the truth at Tybalt, and we can't. That helplessness is what makes the fight, and Mercutio's death moments later, feel like something that could have been avoided if only one character knew what we know.</mark>"
+  }
+};
+ 
+/* ---------------- State ---------------- */
+let state = {
+  step:0,
+  name:'',
+  points:0,
+  maxPoints: 4 + DEFAULT_DECK.short.questions.length + CHECKLIST.length,
+  timerHandle:null,
+  mcIndex:0,
+  mcAnswered:false,
+  shortIndex:0,
+  shortMarks:[],
+  extendedText:'',
+  extendedChecks:{}
+};
+ 
+const app = document.getElementById('app');
+ 
+function updateMarquee(){
+  // scoreboard removed, final tally is shown at the end instead
+}
+ 
+function clearTimer(){ if(state.timerHandle){ clearInterval(state.timerHandle); state.timerHandle=null; } }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+ 
+function startTimer(seconds, onTick, onEnd){
+  clearTimer();
+  let remaining = seconds;
+  onTick(remaining);
+  state.timerHandle = setInterval(()=>{
+    remaining--;
+    onTick(remaining);
+    if(remaining<=0){ clearTimer(); onEnd(); }
+  },1000);
+}
+ 
+/* ---------------- Step 1: Stage alias entry ---------------- */
+const BLOCKED = ['admin','teacher','aaron','null','undefined',
+  'fuck','shit','cunt','bitch','asshole','dick','pussy','cock','bastard',
+  'nigger','nigga','fag','faggot','retard','whore','slut','rape','nazi','kill'];
+function renderName(){
+  clearTimer();
+  app.innerHTML = `
+    <div class="quote-block" style="font-size:16px;">From forth the fatal loins of these two foes\nA pair of star-cross'd lovers take their life;\nWhose misadventured piteous overthrows\nDo with their death bury their parents' strife.</div>
+    <h2>Pick your stage alias</h2>
+    <p>Type the alias you'll play under. Keep it school-appropriate, letters, numbers and spaces only.</p>
+    <input type="text" id="nameInput" maxlength="18" placeholder="Stage alias" />
+    <div class="error" id="nameError"></div>
+    <button class="btn" id="nameGo">Take the stage</button>
+  `;
+  document.getElementById('nameGo').onclick = ()=>{
+    const val = document.getElementById('nameInput').value.trim();
+    const err = document.getElementById('nameError');
+    if(!val){ err.textContent='Enter a stage alias to continue.'; return; }
+    if(!/^[a-zA-Z0-9 \-']{2,18}$/.test(val)){ err.textContent='Use letters, numbers and spaces only (2 to 18 characters).'; return; }
+    if(BLOCKED.some(b=> val.toLowerCase().includes(b))){ err.textContent="That alias isn't available, try another."; return; }
+    state.name = val;
+    state.step = 1;
+    render();
+  };
+}
+ 
+/* ---------------- Step 2: Multiple choice ---------------- */
+function renderMC(){
+  const data = DEFAULT_DECK.mc;
+  const qObj = data.questions[state.mcIndex];
+  state.mcAnswered = false;
+  app.innerHTML = `
+    <span class="timer" id="mcTimer">0:15</span>
+    <h2>${data.act}</h2>
+    <div class="quote-block">${data.quote}</div>
+    <p class="q">${qObj.q}</p>
+    <div class="options" id="mcOptions">
+      ${qObj.options.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join('')}
+    </div>
+    <div class="error" id="mcNote"></div>
+    <button class="btn" id="mcNext" style="display:none;">Continue</button>
+  `;
+  const optsEl = document.getElementById('mcOptions');
+  optsEl.querySelectorAll('.opt').forEach(btn=>{
+    btn.onclick = ()=> answerMC(parseInt(btn.dataset.i));
+  });
+  document.getElementById('mcNext').onclick = ()=> advanceMC();
+ 
+  startTimer(15, (r)=>{ document.getElementById('mcTimer').textContent = `0:${String(r).padStart(2,'0')}`; }, ()=>{
+    if(!state.mcAnswered) answerMC(-1); // timed out
+  });
+}
+function answerMC(choice){
+  if(state.mcAnswered) return;
+  state.mcAnswered = true;
+  clearTimer();
+  const data = DEFAULT_DECK.mc;
+  const qObj = data.questions[state.mcIndex];
+  const optsEl = document.getElementById('mcOptions');
+  optsEl.querySelectorAll('.opt').forEach((btn,i)=>{
+    btn.disabled = true;
+    if(i===qObj.correct) btn.classList.add('correct');
+    else if(i===choice) btn.classList.add('wrong');
+  });
+  const note = document.getElementById('mcNote');
+  if(choice === qObj.correct){
+    state.points++; updateMarquee();
+    note.style.color = '#2f6b4f';
+    note.textContent = pick(["Correct, that's a point.", "Yep, that's right.", "Nice, +1 point."]);
+  } else if(choice === -1){
+    note.textContent = "Time's up, no point this round.";
+  } else {
+    note.textContent = pick(["Not quite, no point this round.", "Close, but not the one.", "Not this time."]);
+  }
+  document.getElementById('mcNext').style.display = 'inline-block';
+}
+function advanceMC(){
+  const data = DEFAULT_DECK.mc;
+  if(state.mcIndex < data.questions.length-1){
+    state.mcIndex++;
+    renderMC();
+  } else {
+    state.step = 2;
+    render();
+  }
+}
+ 
+/* ---------------- Step 3: Short answer ---------------- */
+function renderShort(){
+  const data = DEFAULT_DECK.short;
+  app.innerHTML = `
+    <span class="timer" id="shortTimer">2:00</span>
+    <h2>${data.act}</h2>
+    <div class="quote-block">${data.quote}</div>
+    <p>Answer all four prompts in full sentences. You have 2 minutes total.</p>
+    ${data.questions.map((q,i)=>`
+      <p class="q">${i+1}. ${q.q}</p>
+      <textarea id="short_${i}" rows="2"></textarea>
+    `).join('')}
+    <button class="btn" id="shortSubmit" style="margin-top:16px;">Submit answers</button>
+  `;
+  document.getElementById('shortSubmit').onclick = ()=> finishShort();
+  startTimer(120, (r)=>{
+    const m=Math.floor(r/60), s=r%60;
+    document.getElementById('shortTimer').textContent = `${m}:${String(s).padStart(2,'0')}`;
+  }, ()=> finishShort());
+}
+function finishShort(){
+  clearTimer();
+  DEFAULT_DECK.short.questions.forEach((q,i)=>{
+    const el = document.getElementById('short_'+i);
+    state.shortMarks[i] = { answer: el ? el.value : '', correct:false };
+  });
+  state.step = '3-review';
+  render();
+}
+function renderShortReview(){
+  const data = DEFAULT_DECK.short;
+  const idx = state.shortIndex;
+  const q = data.questions[idx];
+  const mine = state.shortMarks[idx];
+  app.innerHTML = `
+    <h2>Compare to the model answer</h2>
+    <p class="q">${q.q}</p>
+    <p><b>Your answer:</b><br>${mine.answer ? mine.answer : '<i>(left blank)</i>'}</p>
+    <div class="model-answer"><b>Model answer:</b><br>${q.model}</div>
+    <p>Did your answer capture the same idea as the model answer?</p>
+    <div class="options">
+      <button class="opt" id="markYes">Yes, give me the point</button>
+      <button class="opt" id="markNo">Not really, no point</button>
+    </div>
+  `;
+  document.getElementById('markYes').onclick = ()=> markShort(true);
+  document.getElementById('markNo').onclick = ()=> markShort(false);
+}
+function markShort(correct){
+  state.shortMarks[state.shortIndex].correct = correct;
+  if(correct){ state.points++; updateMarquee(); }
+  if(state.shortIndex < DEFAULT_DECK.short.questions.length-1){
+    state.shortIndex++;
+    renderShortReview();
+  } else {
+    state.step = 4;
+    render();
+  }
+}
+ 
+/* ---------------- Step 4: Extended response, checklist self/peer-check ---------------- */
+function renderExtendedWrite(){
+  const data = DEFAULT_DECK.extended;
+  app.innerHTML = `
+    <span class="timer" id="extTimer">3:00</span>
+    <h2>${data.act}</h2>
+    <div class="quote-block">${data.quote}</div>
+    <p>Write one paragraph that works through all four layers: <b>surface meaning</b>, <b>technique + implication</b>, <b>dramatic irony/context</b>, and <b>audience effect</b>.</p>
+    <textarea id="extText" rows="7" placeholder="Write your paragraph here..."></textarea>
+    <button class="btn" id="extSubmit" style="margin-top:14px;">Submit paragraph</button>
+  `;
+  document.getElementById('extSubmit').onclick = ()=> finishExtendedWrite();
+  startTimer(180, (r)=>{
+    const m=Math.floor(r/60), s=r%60;
+    document.getElementById('extTimer').textContent = `${m}:${String(s).padStart(2,'0')}`;
+  }, ()=> finishExtendedWrite());
+}
+function finishExtendedWrite(){
+  clearTimer();
+  const el = document.getElementById('extText');
+  state.extendedText = el ? el.value : '';
+  state.step = '4-checklist';
+  render();
+}
+function renderExtendedChecklist(){
+  app.innerHTML = `
+    <h2>What did your paragraph cover?</h2>
+    <p><b>Your paragraph:</b></p>
+    <div class="model-answer" style="border-left-color:#1f2937; background:rgba(109,27,44,.06);">
+      ${state.extendedText ? state.extendedText.replace(/</g,'&lt;') : '<i>(left blank)</i>'}
+    </div>
+    <p>Tick each layer you think your paragraph covers. Be honest, you'll check it against the model answer next.</p>
+    <div class="checklist">
+      ${CHECKLIST.map((c,i)=>`
+        <label class="check-item">
+          <input type="checkbox" id="chk_${c.id}">
+          <span class="num num-${i+1}">${i+1}</span>
+          <span class="label"><b>${c.label}</b>${c.hint}</span>
+        </label>
+      `).join('')}
+    </div>
+    <button class="btn" id="chkNext">Compare to the model answer</button>
+  `;
+  document.getElementById('chkNext').onclick = ()=>{
+    CHECKLIST.forEach(c=>{
+      state.extendedChecks[c.id] = document.getElementById('chk_'+c.id).checked;
+    });
+    state.step = '4-compare';
+    render();
+  };
+}
+function renderExtendedCompare(){
+  const data = DEFAULT_DECK.extended;
+  app.innerHTML = `
+    <h2>The expert version</h2>
+    <div class="key-row">
+      ${CHECKLIST.map((c,i)=>`<span><span class="num num-${i+1}">${i+1}</span>${c.label}</span>`).join('')}
+    </div>
+    <div class="model-answer">${data.modelAnswer}</div>
+    <p>Now update your ticks if you want to, then lock in your score.</p>
+    <div class="checklist">
+      ${CHECKLIST.map((c,i)=>`
+        <label class="check-item">
+          <input type="checkbox" id="fchk_${c.id}" ${state.extendedChecks[c.id] ? 'checked':''}>
+          <span class="num num-${i+1}">${i+1}</span>
+          <span class="label"><b>${c.label}</b>${c.hint}</span>
+        </label>
+      `).join('')}
+    </div>
+    <button class="btn" id="lockIn">Lock in my score</button>
+  `;
+  document.getElementById('lockIn').onclick = ()=>{
+    let earned = 0;
+    CHECKLIST.forEach(c=>{
+      if(document.getElementById('fchk_'+c.id).checked) earned++;
+    });
+    state.points += earned;
+    updateMarquee();
+    state.step = 5;
+    render();
+  };
+}
+ 
+/* ---------------- Step 5: Beat Aaron results ---------------- */
+function renderResults(){
+  clearTimer();
+  const won = state.points > AARON_SCORE;
+  const tied = state.points === AARON_SCORE;
+  app.innerHTML = `
+    <div class="result-banner ${won ? 'win':'lose'}">
+      ${won ? `${state.name}, you beat Aaron!` : tied ? `It's a draw with Aaron.` : `Aaron wins this round.`}
+    </div>
+    <table class="tally">
+      <tr><td>Multiple choice (4 questions)</td><td>up to 4 pts</td></tr>
+      <tr><td>Short answer, self-marked (4 questions)</td><td>up to ${DEFAULT_DECK.short.questions.length} pts</td></tr>
+      <tr><td>Extended response checklist</td><td>up to ${CHECKLIST.length} pts</td></tr>
+      <tr><td><b>${state.name}'s total</b></td><td><b>${state.points} / ${state.maxPoints}</b></td></tr>
+      <tr><td><b>Aaron's total</b></td><td><b>${AARON_SCORE} / ${state.maxPoints}</b></td></tr>
+    </table>
+    <p>Play again any time for revision.</p>
+    <button class="btn" id="again">Play again</button>
+  `;
+  document.getElementById('again').onclick = ()=>{
+    state = {
+      step:0, name:state.name, points:0, maxPoints: state.maxPoints,
+      timerHandle:null, mcIndex:0, mcAnswered:false, shortIndex:0,
+      shortMarks:[], extendedText:'', extendedChecks:{}
+    };
+    render();
+  };
+}
+ 
+/* ---------------- Router ---------------- */
+function render(){
+  updateMarquee();
+  switch(state.step){
+    case 0: renderName(); break;
+    case 1: renderMC(); break;
+    case 2: renderShort(); break;
+    case '3-review': renderShortReview(); break;
+    case 3: renderShort(); break;
+    case 4: renderExtendedWrite(); break;
+    case '4-checklist': renderExtendedChecklist(); break;
+    case '4-compare': renderExtendedCompare(); break;
+    case 5: renderResults(); break;
+    default: renderName();
+  }
+}
+render();
+</script>
+</body>
+</html>
+ 
